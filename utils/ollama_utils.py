@@ -8,6 +8,9 @@ It handles model listing, response generation, document crawling, and context re
 from typing import Any, Callable, Optional
 import os
 import logging
+import chromadb
+from config import Config
+from utils.validation import sanitize_error_message
 
 from requests import Response, get, post
 from requests.exceptions import RequestException
@@ -17,12 +20,19 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from utils.selenium_crawler import SeleniumCrawler
 
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger: logging.Logger = logging.getLogger(__name__)
 
 # ChromaDB persistence directory path
-DB_PATH: str = "/app/chroma_db"
+DB_PATH: str = Config.CHROMA_DB_PATH
+
+# ChromaDB client settings - consistent across all operations
+CHROMA_SETTINGS = chromadb.Settings(
+    anonymized_telemetry=False,
+    allow_reset=True
+)
 
 
 def get_available_models() -> list[str]:
@@ -41,7 +51,10 @@ def get_available_models() -> list[str]:
     """
     try:
         # Query Ollama container via Docker network name
-        response: Response = get("http://ollama-engine:11434/api/tags", timeout=3)
+        response: Response = get(
+            f"{Config.OLLAMA_BASE_URL}/api/tags",
+            timeout=Config.OLLAMA_TIMEOUT
+        )
         response.raise_for_status()
         
         # Parse JSON response and extract model names
@@ -50,7 +63,8 @@ def get_available_models() -> list[str]:
         
         # Return model names or placeholder if empty
         return model_names if model_names else ["No models downloaded yet"]
-    except Exception:
+    except Exception as e:
+        logger.error(f"Failed to get models: {e}")
         return ["Error connecting to Ollama"]
 
 
@@ -85,7 +99,7 @@ def generate_response(
         'I recommend IBM Cloud Kubernetes Service...'
     """
     # Ollama API endpoint
-    api_url: str = "http://ollama-engine:11434/api/generate"
+    api_url: str = f"{Config.OLLAMA_BASE_URL}/api/generate"
 
     # Combine context and user requirement into full prompt
     full_prompt: str = (
@@ -112,7 +126,8 @@ def generate_response(
         return ai_response
         
     except Exception as e:
-        return f"Failed to connect to Ollama. Error: {e}"
+        logger.error(f"Ollama generation failed: {e}")
+        return f"Failed to connect to AI service. {sanitize_error_message(e)}"
 
 def ingest_knowledge(
     urls: list[str],
@@ -148,15 +163,15 @@ def ingest_knowledge(
     
     # Initialize HuggingFace embeddings model
     embeddings: HuggingFaceEmbeddings = HuggingFaceEmbeddings(
-        model_name="all-MiniLM-L6-v2"
+        model_name=Config.EMBEDDING_MODEL
     )
     
     # Initialize Selenium web crawler with configuration
     crawler: SeleniumCrawler = SeleniumCrawler(
-        max_depth=0,              # Crawl only seed URLs (depth 0)
-        max_pages=100,            # Limit to 100 pages to avoid excessive crawling
-        delay=1.0,                # 2 second delay between requests
-        page_load_timeout=30      # 30 second page load timeout
+        max_depth=Config.CRAWLER_MAX_DEPTH,
+        max_pages=Config.CRAWLER_MAX_PAGES,
+        delay=Config.CRAWLER_DELAY,
+        page_load_timeout=Config.CRAWLER_TIMEOUT
     )
     
     # Crawl URLs and collect raw documents
@@ -189,8 +204,8 @@ def ingest_knowledge(
     # Split documents into smaller chunks for better retrieval
     logger.info("Splitting documents into chunks...")
     text_splitter: RecursiveCharacterTextSplitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,      # Maximum characters per chunk
-        chunk_overlap=100     # Overlap between chunks for context continuity
+        chunk_size=Config.CHUNK_SIZE,
+        chunk_overlap=Config.CHUNK_OVERLAP
     )
     chunks: list[Document] = text_splitter.split_documents(langchain_docs)
     
@@ -201,7 +216,8 @@ def ingest_knowledge(
     vector_db: Chroma = Chroma.from_documents(
         documents=chunks,
         embedding=embeddings,
-        persist_directory=DB_PATH
+        persist_directory=DB_PATH,
+        client_settings=CHROMA_SETTINGS
     )
     
     # Compile final statistics
@@ -239,14 +255,15 @@ def get_context(query: str) -> list[Document]:
     
     # Initialize embeddings and database connection
     embeddings: HuggingFaceEmbeddings = HuggingFaceEmbeddings(
-        model_name="all-MiniLM-L6-v2"
+        model_name=Config.EMBEDDING_MODEL
     )
     db: Chroma = Chroma(
         persist_directory=DB_PATH,
-        embedding_function=embeddings
+        embedding_function=embeddings,
+        client_settings=CHROMA_SETTINGS
     )
     
     # Retrieve top 3 most relevant document chunks
-    docs: list[Document] = db.similarity_search(query, k=3)
+    docs: list[Document] = db.similarity_search(query, k=Config.RETRIEVAL_COUNT)
 
     return docs

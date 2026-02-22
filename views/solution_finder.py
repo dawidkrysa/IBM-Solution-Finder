@@ -8,6 +8,8 @@ It uses Ollama for AI-powered recommendations and ChromaDB for document retrieva
 from typing import Any, Optional
 import utils.ollama_utils as ollama_utils
 import streamlit as st
+from utils.validation import sanitize_text
+from config import Config
 
 # --- MAIN DASHBOARD ---
 st.title("IBM Solution Finder")
@@ -47,8 +49,9 @@ selection: Optional[str] = st.segmented_control(
 user_input: str = st.text_area(
     "Project Requirements",
     height=150,
-    placeholder="E.g., We need a secure, scalable container orchestration platform to run our microservices...",
-    value=st.session_state.get("req_input", "")
+    placeholder="E.g., We need a secure, scalable container orchestration platform...",
+    value=st.session_state.get("req_input", ""),
+    max_chars=Config.MAX_INPUT_LENGTH
 )
 
 # Main analysis button and processing logic
@@ -57,6 +60,13 @@ if st.button("Analyze Requirements", type="primary"):
     if not user_input.strip():
         st.warning("Please enter some project requirements first.")
     else:
+        # Sanitize input
+        user_input = sanitize_text(user_input)
+        
+        if len(user_input) < 10:
+            st.warning("Please provide more detailed requirements (at least 10 characters).")
+            st.stop()
+        
         # Retrieve relevant context from ChromaDB vector store
         context_docs: list[Any] = ollama_utils.get_context(user_input)
 

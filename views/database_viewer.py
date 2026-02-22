@@ -9,17 +9,24 @@ from typing import Any
 import streamlit as st
 import pandas as pd
 import chromadb
+from config import Config
 
 # Configure Streamlit page settings
 st.set_page_config(page_title="ChromaDB Inspector", layout="wide")
 st.title("Knowledge Base Inspector")
 
 # ChromaDB persistence directory path
-DB_PATH: str = "/app/chroma_db"
+DB_PATH: str = Config.CHROMA_DB_PATH
 
 try:
-    # Initialize ChromaDB persistent client
-    client: chromadb.PersistentClient = chromadb.PersistentClient(path=DB_PATH)
+    # Initialize ChromaDB persistent client with settings
+    client: chromadb.PersistentClient = chromadb.PersistentClient(
+        path=DB_PATH,
+        settings=chromadb.Settings(
+            anonymized_telemetry=False,
+            allow_reset=True
+        )
+    )
     collections: list[chromadb.Collection] = client.list_collections()
 
     if not collections:

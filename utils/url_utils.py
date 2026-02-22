@@ -6,6 +6,7 @@ Handles URL normalization, validation, and deduplication.
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from typing import Set, List
 import re
+from config import Config
 
 
 def normalize_url(url: str) -> str:
@@ -47,17 +48,20 @@ def normalize_url(url: str) -> str:
     return normalized
 
 
-def is_valid_ibm_baw_url(url: str, version: str = "25.0.x") -> bool:
+def is_valid_ibm_baw_url(url: str, version: str = None) -> bool:
     """
     Check if URL is a valid IBM BAW documentation page.
     
     Args:
         url: URL to validate
-        version: BAW version to filter for (default: 25.0.x)
+        version: BAW version to filter for (default: from config)
         
     Returns:
         True if URL is valid IBM BAW documentation
     """
+    if version is None:
+        version = Config.BAW_VERSION
+        
     # Must be IBM docs domain
     if not url.startswith("https://www.ibm.com/docs/"):
         return False

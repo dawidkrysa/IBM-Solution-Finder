@@ -10,6 +10,14 @@ import textwrap
 import platform
 import streamlit as st
 import utils.ollama_utils as ollama_utils
+from utils.logging_config import setup_logging
+from config.settings import Settings as Config
+from config.prompts import DEFAULT_SYSTEM_PROMPT
+from config.urls import SEED_URLS
+
+# Setup logging
+logger = setup_logging()
+logger.info(f"Starting IBM Solution Finder v{Config.APP_VERSION}")
 
 # Define application pages
 page_1: st.Page = st.Page(
@@ -52,20 +60,7 @@ with st.sidebar:
     with st.expander("System Instructions", expanded=False):
         st.text_area(
             "LLM Instructions",
-            value=textwrap.dedent("""
-            You are an expert IBM Solutions Architect.
-            Your specialized knowledge is limited to IBM Products provided in knowledge.
-
-            When analyzing requirements:
-            1. If the requirement mentions a technical term (like AWT) found in the provided CONTEXT, explain how it relates to the IBM BAW architecture (e.g., as part of the underlying Java runtime or integration capabilities).
-            2. If a requirement is a direct feature of BAW, classify as Standard OOTB.
-            3. If it is a competitor product, reject it.
-
-            Provide your analysis in this exact format:
-            - Classification: [Standard OOTB / Modification Required / Unclear]
-            - Justification: [Explain the link between the requirement and the IBM context provided]
-            - Documentation Reference: [The specific term or section from the IBM docs]
-            """).strip(),
+            value=DEFAULT_SYSTEM_PROMPT,
             height=450,
             key="system_prompt"
         )
@@ -73,15 +68,6 @@ with st.sidebar:
     st.divider()
 
     st.header("Knowledge Management")
-    
-    # IBM Business Automation Workflow documentation URLs to crawl
-    target_urls: list[str] = [
-        "https://www.ibm.com/docs/en/baw/25.0.x?topic=management-building-process-applications",
-        "https://www.ibm.com/docs/en/baw/25.0.x?topic=customizing-configuring-authoring-assistant",
-        "https://www.ibm.com/docs/en/baw/25.0.x?topic=customizing-configuring-workplace-assistant",
-        "https://www.ibm.com/docs/en/baw/25.0.x?topic=traditional-managing-projects",
-        "https://www.ibm.com/docs/en/baw/25.0.x?topic=glossary"
-    ]
     
     # Knowledge synchronization button
     if st.button("Sync Knowledge", use_container_width=True):
@@ -114,7 +100,7 @@ with st.sidebar:
         try:
             # Execute knowledge ingestion with progress callback
             stats: dict[str, int] = ollama_utils.ingest_knowledge(
-                target_urls,
+                SEED_URLS,
                 progress_callback=update_progress
             )
             

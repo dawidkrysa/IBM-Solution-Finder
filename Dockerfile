@@ -1,6 +1,9 @@
 # Use a lightweight "slim" image for production
 FROM python:3.11-slim
 
+# Create non-root user with home directory
+RUN groupadd -r appuser && useradd -r -g appuser -m -d /home/appuser appuser
+
 # Set the working directory inside the container
 WORKDIR /app
 
@@ -29,8 +32,18 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of your application code into the container
 COPY . .
 
+# Create logs and chroma_db directories with proper permissions
+RUN mkdir -p /app/logs /app/chroma_db && chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
 # Expose the Streamlit port
 EXPOSE 8501
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+
 # Start the Streamlit server
-CMD ["streamlit", "run", "streamlit_app.py", "--server.enableCORS", "false", "--server.enableXsrfProtection", "false"]
+CMD ["streamlit", "run", "streamlit_app.py", "--server.enableCORS", "false"]

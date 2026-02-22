@@ -174,21 +174,40 @@ The default system prompt configures the LLM as an IBM Solutions Architect speci
 
 ```
 .
-├── streamlit_app.py              # Main Streamlit application
+├── streamlit_app.py              # Main application entry point
+├── config.py                     # Configuration wrapper (backward compatibility)
 ├── requirements.txt              # Python dependencies
 ├── Dockerfile                    # Streamlit container with Chrome
 ├── docker-compose.yml            # Multi-container orchestration
-├── README.md                     # This file
-├── .dockerignore                 # Files to exclude from Docker build
-├── utils/
+├── LICENSE                       # MIT License
+├── README.md                     # This documentation
+├── .gitignore                    # Git ignore patterns
+├── .dockerignore                 # Docker build exclusions
+│
+├── config/                       # Configuration package
+│   ├── __init__.py              # Package exports
+│   ├── settings.py              # Application settings
+│   ├── prompts.py               # LLM prompts and templates
+│   └── urls.py                  # Documentation URLs
+│
+├── utils/                        # Utility modules
+│   ├── __init__.py              # Package initialization
+│   ├── logging_config.py        # Logging configuration
 │   ├── ollama_utils.py          # Ollama API & RAG orchestration
-│   ├── selenium_crawler.py      # Selenium-based crawler for JavaScript sites
-│   └── url_utils.py             # URL normalization and validation
-├── views/
+│   ├── selenium_crawler.py      # Web crawler for IBM docs
+│   ├── url_utils.py             # URL normalization
+│   └── validation.py            # Input validation
+│
+├── views/                        # Streamlit pages
+│   ├── __init__.py              # Package initialization
 │   ├── solution_finder.py       # Main analysis interface
 │   └── database_viewer.py       # Knowledge base inspector
+│
 ├── .devcontainer/               # VS Code dev container config
-└── chroma_db/                   # Vector database storage (created at runtime)
+├── .streamlit/                  # Streamlit configuration
+│   └── config.toml              # App settings (theme, server)
+│
+└── chroma_db/                   # Vector database (created at runtime)
 ```
 
 ## Dependencies
@@ -275,17 +294,51 @@ docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
 
 ### Local Development
 
-```bash
-# Install dependencies
-pip install -r requirements.txt
+1. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-# Run Streamlit locally
-streamlit run streamlit_app.py
-```
+2. **Set up Ollama locally** (optional)
+   ```bash
+   # Install Ollama from https://ollama.ai
+   ollama pull llama3.2
+   ```
+
+3. **Configure environment**
+   ```bash
+   # Copy and edit .env file if needed
+   export OLLAMA_BASE_URL=http://localhost:11434
+   ```
+
+4. **Run Streamlit**
+   ```bash
+   streamlit run streamlit_app.py
+   ```
 
 ### VS Code Dev Container
 
-The project includes a `.devcontainer` configuration for containerized development.
+The project includes a `.devcontainer` configuration for containerized development with all dependencies pre-installed.
+
+### Configuration
+
+All configuration is centralized in the `config/` package:
+
+- **`config/settings.py`**: Application settings (Ollama URL, crawler limits, etc.)
+- **`config/prompts.py`**: System prompts and LLM templates
+- **`config/urls.py`**: IBM documentation URLs for crawling
+
+To modify settings, either:
+1. Edit the files directly (for development)
+2. Use environment variables (for production)
+
+Example environment variables:
+```bash
+export OLLAMA_BASE_URL=http://ollama-engine:11434
+export CRAWLER_MAX_PAGES=50
+export CRAWLER_MAX_DEPTH=2
+export LOG_LEVEL=DEBUG
+```
 
 ## License
 

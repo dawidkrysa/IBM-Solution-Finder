@@ -12,6 +12,7 @@
       ]
     }
   },
+  "remoteUser": "appuser",
   "forwardPorts": [8501],
   "portsAttributes": {
     "8501": {

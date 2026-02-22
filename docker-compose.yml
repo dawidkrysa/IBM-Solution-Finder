@@ -6,20 +6,29 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8501:8501"
+      - "${STREAMLIT_PORT:-8501}:8501"
     volumes:
       - .:/app
       - knowledge_vault:/app/chroma_db
+      - ./logs:/app/logs
     depends_on:
       - ollama-engine
+    environment:
+      - OLLAMA_BASE_URL=http://ollama-engine:11434
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp
+    restart: unless-stopped
 
   ollama-engine:
     image: ollama/ollama:latest
     container_name: ollama-engine
     ports:
-      - "11434:11434"
+      - "${OLLAMA_PORT:-11434}:11434"
     volumes:
-      - D:/OllamaModels:/root/.ollama
+      - ${OLLAMA_MODELS_PATH:-./ollama_models}:/root/.ollama
     deploy:
       resources:
         reservations:
@@ -27,6 +36,9 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
 
 volumes:
   knowledge_vault:
