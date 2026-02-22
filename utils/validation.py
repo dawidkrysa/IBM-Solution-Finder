@@ -4,7 +4,6 @@ import re
 from typing import Optional
 from config.settings import Settings as Config
 
-
 def sanitize_text(text: str) -> str:
     """
     Sanitize user input text.
@@ -28,28 +27,6 @@ def sanitize_text(text: str) -> str:
     text = ' '.join(text.split())
     
     return text
-
-
-def validate_url(url: str) -> bool:
-    """
-    Validate URL format.
-    
-    Args:
-        url: URL to validate
-        
-    Returns:
-        True if valid
-    """
-    url_pattern = re.compile(
-        r'^https?://'  # http:// or https://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain
-        r'localhost|'  # localhost
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # or IP
-        r'(?::\d+)?'  # optional port
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE
-    )
-    return bool(url_pattern.match(url))
-
 
 def sanitize_error_message(error: Exception) -> str:
     """

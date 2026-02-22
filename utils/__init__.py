@@ -22,7 +22,7 @@ from .selenium_crawler import SeleniumCrawler
 # URL utilities
 from .url_utils import (
     normalize_url,
-    is_valid_ibm_baw_url,
+    is_valid_url,
     URLTracker
 )
 
@@ -45,7 +45,7 @@ __all__ = [
     'SeleniumCrawler',
     # URL utilities
     'normalize_url',
-    'is_valid_ibm_baw_url',
+    'is_valid_url',
     'URLTracker',
     # Validation
     'sanitize_text',

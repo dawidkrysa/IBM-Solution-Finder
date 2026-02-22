@@ -31,7 +31,7 @@ DB_PATH: str = Config.CHROMA_DB_PATH
 # ChromaDB client settings - consistent across all operations
 CHROMA_SETTINGS = chromadb.Settings(
     anonymized_telemetry=False,
-    allow_reset=True
+    allow_reset=False 
 )
 
 
@@ -51,10 +51,12 @@ def get_available_models() -> list[str]:
     """
     try:
         # Query Ollama container via Docker network name
+        # https://docs.ollama.com/api/tags
         response: Response = get(
             f"{Config.OLLAMA_BASE_URL}/api/tags",
             timeout=Config.OLLAMA_TIMEOUT
         )
+        # Raises HTTPError, if one occurred.
         response.raise_for_status()
         
         # Parse JSON response and extract model names
@@ -99,6 +101,7 @@ def generate_response(
         'I recommend IBM Cloud Kubernetes Service...'
     """
     # Ollama API endpoint
+    # https://docs.ollama.com/api/generate
     api_url: str = f"{Config.OLLAMA_BASE_URL}/api/generate"
 
     # Combine context and user requirement into full prompt
@@ -110,8 +113,8 @@ def generate_response(
     # Prepare request payload
     payload: dict[str, Any] = {
         "model": selected_model,
-        "system": system_prompt,
-        "prompt": full_prompt,
+        "system": system_prompt, # System prompt for the model to generate a response from
+        "prompt": full_prompt, # Text for the model to generate a response from
         "stream": False  # Request complete response at once
     }
     
@@ -162,6 +165,7 @@ def ingest_knowledge(
     )
     
     # Initialize HuggingFace embeddings model
+    # Access embedding models via the Inference Providers
     embeddings: HuggingFaceEmbeddings = HuggingFaceEmbeddings(
         model_name=Config.EMBEDDING_MODEL
     )

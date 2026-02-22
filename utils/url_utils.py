@@ -48,7 +48,7 @@ def normalize_url(url: str) -> str:
     return normalized
 
 
-def is_valid_ibm_baw_url(url: str, version: str = None) -> bool:
+def is_valid_url(url: str, version: str = None) -> bool:
     """
     Check if URL is a valid IBM BAW documentation page.
     

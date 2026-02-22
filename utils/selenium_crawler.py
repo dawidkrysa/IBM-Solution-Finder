@@ -14,7 +14,7 @@ from typing import List, Optional, Callable
 from urllib.parse import urljoin
 import time
 import logging
-from utils.url_utils import normalize_url, is_valid_ibm_baw_url, URLTracker
+from utils.url_utils import normalize_url, is_valid_url, URLTracker
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +105,7 @@ class SeleniumCrawler:
             
             # Remove non-content elements
             for element in soup(['script', 'style', 'nav', 'footer', 'header', 'aside', 'iframe']):
+                # It removes the element from the HTML tree and clears its internal data structures.
                 element.decompose()
             
             # Extract text
@@ -138,7 +139,7 @@ class SeleniumCrawler:
                         absolute_url = urljoin(url, href)
                         normalized = normalize_url(absolute_url)
                         
-                        if is_valid_ibm_baw_url(normalized):
+                        if is_valid_url(normalized):
                             links.append(normalized)
                 except Exception:
                     continue
@@ -188,7 +189,7 @@ class SeleniumCrawler:
                     continue
                 
                 # Validate URL
-                if not is_valid_ibm_baw_url(url):
+                if not is_valid_url(url):
                     logger.debug(f"Skipping invalid URL: {url}")
                     continue
                 
