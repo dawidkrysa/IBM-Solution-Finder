@@ -289,11 +289,26 @@ The project includes a `.devcontainer` configuration for containerized developme
 
 ## License
 
-[Add your license information here]
+This project is licensed under the MIT License.
+
+    Note: This means you are free to use, copy, modify, and distribute this software for any purpose, provided that the copyright notice and this permission notice are included in all copies or substantial portions of the Software.
+
+See the LICENSE file for the full text.
 
 ## Contributing
 
-[Add contribution guidelines here]
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
+How to Contribute
+
+1. Fork the Project (Click the 'Fork' button at the top right of this page).
+2. Create your Feature Branch (git checkout -b feature/AmazingFeature).
+3. Commit your Changes (git commit -m 'Add some AmazingFeature').
+4. Push to the Branch (git push origin feature/AmazingFeature).
+5. Open a Pull Request describing what you changed and why.
+
+### Reporting Issues
+
+If you find a bug or have a suggestion for the IBM-Solution-Finder, please open an issue and provide as much detail as possible.
 
 ## Support
 
