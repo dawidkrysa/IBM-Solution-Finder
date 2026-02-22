@@ -9,7 +9,7 @@ from typing import Any, Optional
 import utils.ollama_utils as ollama_utils
 import streamlit as st
 from utils.validation import sanitize_text
-from config import Config
+from config.settings import Settings as Config
 
 # --- MAIN DASHBOARD ---
 st.title("IBM Solution Finder")

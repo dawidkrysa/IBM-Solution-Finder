@@ -6,7 +6,7 @@ Handles URL normalization, validation, and deduplication.
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from typing import Set, List
 import re
-from config import Config
+from config.settings import Settings as Config
 
 
 def normalize_url(url: str) -> str:

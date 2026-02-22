@@ -9,7 +9,7 @@ from typing import Any, Callable, Optional
 import os
 import logging
 import chromadb
-from config import Config
+from config.settings import Settings as Config
 from utils.validation import sanitize_error_message
 
 from requests import Response, get, post

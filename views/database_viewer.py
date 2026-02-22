@@ -9,7 +9,7 @@ from typing import Any
 import streamlit as st
 import pandas as pd
 import chromadb
-from config import Config
+from config.settings import Settings as Config
 
 # Configure Streamlit page settings
 st.set_page_config(page_title="ChromaDB Inspector", layout="wide")

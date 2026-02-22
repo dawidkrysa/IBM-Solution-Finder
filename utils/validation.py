@@ -2,7 +2,7 @@
 
 import re
 from typing import Optional
-from config import Config
+from config.settings import Settings as Config
 
 
 def sanitize_text(text: str) -> str:
