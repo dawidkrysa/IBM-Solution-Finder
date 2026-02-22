@@ -1,0 +1,13 @@
+streamlit
+langchain
+langchain-chroma
+langchain-text-splitters
+langchain-huggingface
+langchain-core
+chromadb
+sentence-transformers
+beautifulsoup4
+requests
+selenium
+webdriver-manager
+pandas

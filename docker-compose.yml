@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  streamlit-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+      - knowledge_vault:/app/chroma_db
+    depends_on:
+      - ollama-engine
+
+  ollama-engine:
+    image: ollama/ollama:latest
+    container_name: ollama-engine
+    ports:
+      - "11434:11434"
+    volumes:
+      - D:/OllamaModels:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  knowledge_vault:
